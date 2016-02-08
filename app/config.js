@@ -33,7 +33,7 @@ db.knex.schema.hasTable('clicks').then(function(exists) {
   if (!exists) {
     db.knex.schema.createTable('clicks', function (click) {
       click.increments('id').primary();
-      click.integer('link_id');
+      click.integer('link_id'); // foreign key linking to url id
       click.timestamps();
     }).then(function (table) {
       console.log('Created Table', table);
@@ -44,6 +44,20 @@ db.knex.schema.hasTable('clicks').then(function(exists) {
 /************************************************************/
 // Add additional schema definitions below
 /************************************************************/
+
+db.knex.schema.hasTable('users').then(function(exists) {
+  if (!exists) {
+    db.knex.schema.createTable('users', function (user) {
+      user.increments('id').primary();
+      user.string('username', 20);
+      user.string('password', 20);
+      user.timestamps();
+    }).then(function (table) {
+      console.log('Created Users Table', table);
+    });
+  }
+});
+
 
 
 module.exports = db;
