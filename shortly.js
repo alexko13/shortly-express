@@ -53,6 +53,7 @@ function(req, res) {
     //password : req.body.password
   }).fetch().then(function(user) {
     var hash = user.get('password');
+    console.log(hash);
     if(!bcrypt.compareSync(req.body.password, hash)) {
       // user not found, go sign up
       console.log('Account not found! Please sign up.', user);
