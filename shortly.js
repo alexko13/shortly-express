@@ -3,6 +3,7 @@ var util = require('./lib/utility');
 var partials = require('express-partials');
 var bodyParser = require('body-parser');
 var session = require('express-session');
+var bcrypt = require('bcrypt-nodejs');
 
 var db = require('./app/config');
 var Users = require('./app/collections/users');
@@ -48,10 +49,11 @@ function(req, res) {
 app.post('/login',
 function(req, res) {
   new User({
-    username : req.body.username,
-    password : req.body.password
+    username : req.body.username//,
+    //password : req.body.password
   }).fetch().then(function(user) {
-    if(!user) {
+    var hash = user.get('password');
+    if(!bcrypt.compareSync(req.body.password, hash)) {
       // user not found, go sign up
       console.log('Account not found! Please sign up.', user);
       // todo: popup or alert msg/div
