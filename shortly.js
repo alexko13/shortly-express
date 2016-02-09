@@ -35,79 +35,82 @@ app.use(session({
 
 /////// Login /////////////////
 app.get('/', 
-function(req, res) {
-  util.isLoggedIn(req, res, function(response){
-    response.render('index');
+  function(req, res) {
+    util.isLoggedIn(req, res, function(response){
+      response.render('index');
+    });
   });
-});
 
 app.get('/login', 
-function(req, res) {
-  res.render('login');
-});
+  function(req, res) {
+    res.render('login');
+  });
 
 app.post('/login',
-function(req, res) {
-  new User({
+  function(req, res) {
+    new User({
     username : req.body.username//,
     //password : req.body.password
   }).fetch().then(function(user) {
-    var hash = user.get('password');
-    console.log(hash);
-    if(!bcrypt.compareSync(req.body.password, hash)) {
-      // user not found, go sign up
-      console.log('Account not found! Please sign up.', user);
-      // todo: popup or alert msg/div
-      res.redirect('/login'); // shouldn't this be signup?
+    if(!user) {
+      console.log('Username not found. Please sign up.')
+      res.redirect('/login'); //to sign up
     } else {
-      // user found in database
+      var hash = user.get('password');
+      if(!bcrypt.compareSync(req.body.password, hash)) {
+        //wrong pw
+        console.log('Password not found! Forgot password?');
+        // todo: popup or alert msg/div
+        res.redirect('/login'); // shouldn't this be signup?
+      } else {
+        // user found in database
         // save username in session
-      util.createSession(req, user);
-      // proceed to app:
-      res.redirect('/');
+        util.createSession(req, user);
+        res.redirect('/');
+      }
     }
   });
 });
 //////////////////////////////
 ////// Sign up/////////////////
 app.get('/signup', 
-function(req, res) {
-  res.render('signup');
-});
+  function(req, res) {
+    res.render('signup');
+  });
 
 app.post('/signup',
-function(req, res){
-  new User({
-    username : req.body.username,
-    password : req.body.password
-  }).fetch().then(function(user){
-    if(user){
-      console.log('You are already signed up. Please log in.');
-      res.redirect('/login');
-    } else {
-      console.log(req.body);
-      var newUser = new User({ 
-        username : req.body.username,
-        password : req.body.password
-      });
+  function(req, res){
+    new User({
+      username : req.body.username,
+      password : req.body.password
+    }).fetch().then(function(user){
+      if(user){
+        console.log('You are already signed up. Please log in.');
+        res.redirect('/login');
+      } else {
+        console.log(req.body);
+        var newUser = new User({ 
+          username : req.body.username,
+          password : req.body.password
+        });
 
-      newUser.save().then(function(newUser){
-        Users.add(newUser);
+        newUser.save().then(function(newUser){
+          Users.add(newUser);
         // todo: save in session
         util.createSession(req, newUser);
         res.redirect('/'); 
       });
-      
-    }
+
+      }
+    });
   });
-});
 /////////////////////////
 
 app.get('/create', 
-function(req, res) {
-  util.isLoggedIn(req, res, function(response){
-    response.render('index');
-  });
+  function(req, res) {
+    util.isLoggedIn(req, res, function(response){
+      response.render('index');
+    });
   //check if user is logged in
   //res.render('index');
   //redirect if user isnt logged in
@@ -115,7 +118,7 @@ function(req, res) {
 });
 
 app.get('/links', 
-function(req, res) {
+  function(req, res) {
   // if logged in:
   util.isLoggedIn(req, res, function(response){
     Links.reset().fetch().then(function(links) {
@@ -125,45 +128,45 @@ function(req, res) {
 });
 
 app.post('/links', 
-function(req, res) {
-  var uri = req.body.url;
+  function(req, res) {
+    var uri = req.body.url;
 
-  if (!util.isValidUrl(uri)) {
-    console.log('Not a valid url: ', uri);
-    return res.send(404);
-  }
-// check if this link is already in the database
-  new Link({ url: uri }).fetch().then(function(found) {
-    if (found) {
-      res.send(200, found.attributes);
-    } else {
-      util.getUrlTitle(uri, function(err, title) {
-        if (err) {
-          console.log('Error reading URL heading: ', err);
-          return res.send(404);
-        }
-// create new link
-        var link = new Link({
-          url: uri,
-          title: title,
-          base_url: req.headers.origin
-        });
-
-        link.save().then(function(newLink) {
-          Links.add(newLink);
-          res.send(200, newLink);
-        });
-      });
+    if (!util.isValidUrl(uri)) {
+      console.log('Not a valid url: ', uri);
+      return res.send(404);
     }
-  });
+// check if this link is already in the database
+new Link({ url: uri }).fetch().then(function(found) {
+  if (found) {
+    res.send(200, found.attributes);
+  } else {
+    util.getUrlTitle(uri, function(err, title) {
+      if (err) {
+        console.log('Error reading URL heading: ', err);
+        return res.send(404);
+      }
+// create new link
+var link = new Link({
+  url: uri,
+  title: title,
+  base_url: req.headers.origin
+});
+
+link.save().then(function(newLink) {
+  Links.add(newLink);
+  res.send(200, newLink);
+});
+});
+  }
+});
 });
 
 app.get('/logout',
-function(req, res) {
-  req.session.destroy(function() {
-    res.redirect('/');
+  function(req, res) {
+    req.session.destroy(function() {
+      res.redirect('/');
+    });
   });
-});
 
 /************************************************************/
 // Write your authentication routes here
@@ -189,12 +192,12 @@ app.get('/*', function(req, res) {
 
       click.save().then(function() {
         db.knex('urls')
-          .where('code', '=', link.get('code'))
-          .update({
-            visits: link.get('visits') + 1,
-          }).then(function() {
-            return res.redirect(link.get('url'));
-          });
+        .where('code', '=', link.get('code'))
+        .update({
+          visits: link.get('visits') + 1,
+        }).then(function() {
+          return res.redirect(link.get('url'));
+        });
       });
     }
   });
