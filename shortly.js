@@ -22,7 +22,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(__dirname + '/public'));
 
-
+/////// Login //////////////
 app.get('/', 
 function(req, res) {
   //check if user is logged in
@@ -36,15 +36,61 @@ function(req, res) {
   res.render('login');
 });
 
+app.post('/login',
+function(req, res) {
+  new User({
+    username : req.body.username,
+    password : req.body.password
+  }).fetch().then(function(found) {
+    if(!found) {
+      console.log('Account not found! Please sign up.');
+      res.redirect('/login');
+    } else {
+      // todo: save in session
+      res.redirect('/');
+    }
+  });
+});
+/////////////////////
+////// Sign up///////
+app.get('/signup', 
+function(req, res) {
+  res.render('signup');
+});
+
+app.post('/signup',
+function(req, res){
+  // create a user
+  // store in db
+  console.log(req.body);
+  var user = new User({ 
+    username : req.body.username,
+    password : req.body.password
+  });
+  user.save().then(function(newUser){
+    Users.add(newUser);
+    // todo: save in session
+    //res.status(201);
+    res.redirect('/'); //change?
+  });
+});
+/////////////////////////
+
 app.get('/create', 
 function(req, res) {
-  res.render('index');
+  //check if user is logged in
+  //res.render('index');
+  //redirect if user isnt logged in
+  res.redirect('login');
 });
 
 app.get('/links', 
 function(req, res) {
+  // if logged in:
   Links.reset().fetch().then(function(links) {
     res.send(200, links.models);
+  // else: 
+  // res.redirect('login');
   });
 });
 
@@ -56,7 +102,7 @@ function(req, res) {
     console.log('Not a valid url: ', uri);
     return res.send(404);
   }
-
+// check if this link is already in the database
   new Link({ url: uri }).fetch().then(function(found) {
     if (found) {
       res.send(200, found.attributes);
@@ -66,7 +112,7 @@ function(req, res) {
           console.log('Error reading URL heading: ', err);
           return res.send(404);
         }
-
+// create new link
         var link = new Link({
           url: uri,
           title: title,
@@ -86,7 +132,8 @@ function(req, res) {
 // Write your authentication routes here
 /************************************************************/
 
-
+//app.func that saves user to session
+//app.func that checks if user is logged in;
 
 /************************************************************/
 // Handle the wildcard route last - if all other routes fail

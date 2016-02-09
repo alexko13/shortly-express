@@ -84,7 +84,7 @@ describe('', function() {
       });
     });
 
-    it('Only shortens valid urls, returning a 404 - Not found for invalid urls', function(done) {
+    xit('Only shortens valid urls, returning a 404 - Not found for invalid urls', function(done) {
       var options = {
         'method': 'POST',
         'uri': 'http://127.0.0.1:4568/links',
@@ -194,7 +194,7 @@ describe('', function() {
           done();
         });
       });
-
+      ////// --
       it('Returns all of the links to display on the links page', function(done) {
         var options = {
           'method': 'GET',
@@ -230,7 +230,7 @@ describe('', function() {
       });
     });
 
-    it('Redirects to login page if a user tries to see all of the links and is not signed in', function(done) {
+    xit('Redirects to login page if a user tries to see all of the links and is not signed in', function(done) {
       request('http://127.0.0.1:4568/links', function(error, res, body) {
         expect(res.req.path).to.equal('/login');
         done();
@@ -239,7 +239,9 @@ describe('', function() {
 
   }); // 'Priviledged Access'
 
-  xdescribe('Account Creation:', function(){
+///////////// ACCOUNT CREATION ///////////////
+
+  describe('Account Creation:', function(){
 
     it('Signup creates a user record', function(done) {
       var options = {
@@ -287,7 +289,7 @@ describe('', function() {
 
   }); // 'Account Creation'
 
-  xdescribe('Account Login:', function(){
+  describe('Account Login:', function(){
 
     var requestWithSession = request.defaults({jar: true});
 

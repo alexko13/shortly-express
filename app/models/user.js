@@ -8,7 +8,7 @@ var User = db.Model.extend({
   hasTimestamps: true,
 
   initialize : function(){
-    //needed stuff?
+    //encrypting
   }
 });
 
