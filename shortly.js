@@ -2,7 +2,7 @@ var express = require('express');
 var util = require('./lib/utility');
 var partials = require('express-partials');
 var bodyParser = require('body-parser');
-
+var session = require('express-session');
 
 var db = require('./app/config');
 var Users = require('./app/collections/users');
@@ -22,17 +22,34 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(__dirname + '/public'));
 
+//// Session stuff //////////
+//app.use(express.cookieParser('shhhh, very secret'));
+app.use(session({
+  secret : 'mySecret',
+  // forces a session to be saved back to the session store:
+  resave: false,
+  saveUninitialized: false
+}));
+
+
 /////// Login //////////////
 app.get('/', 
 function(req, res) {
-  //check if user is logged in
-  //res.render('index');
-  //if not redirect to /login
-  res.redirect('/login');
+  //check if user is logged in -> if(req.session.username)
+  if(req.session.username) {
+    res.render('index');
+  } else {
+  //if not redirect to /login -> else
+  //req.session.test = "i am inside session";
+    res.redirect('/login');
+  }
+  console.log('/ get', req.session);
+  //res.redirect('/login');
 });
 
 app.get('/login', 
 function(req, res) {
+  console.log('/login get', req.session);
   res.render('login');
 });
 
@@ -41,12 +58,18 @@ function(req, res) {
   new User({
     username : req.body.username,
     password : req.body.password
-  }).fetch().then(function(found) {
-    if(!found) {
-      console.log('Account not found! Please sign up.');
+  }).fetch().then(function(user) {
+    if(!user) {
+      console.log('Account not found! Please sign up.', user);
       res.redirect('/login');
     } else {
       // todo: save in session
+      console.log('USER', user);
+      console.log('USER.at.username', user.attributes.username);
+      req.session.username = user.attributes.username;
+      console.log('SEssion after username addition', req.session);
+
+      //util.createSession();
       res.redirect('/');
     }
   });
